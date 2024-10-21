@@ -46,6 +46,19 @@ along with GCC; see the file COPYING3.  If not see
 #define RISCV_TUNE_STRING_DEFAULT "rocket"
 #endif
 
+#if defined(__riscv)
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+# define MARCH_NATIVE_SPEC_FUNCTIONS				\
+  { "local_cpu_detect", host_detect_local_cpu },
+# define EXPAND_MARCH_SPECS					\
+  "%{march=native:%<march=native %:local_cpu_detect(arch)} "	\
+  "%{!march=native: %{march=*:%:riscv_expand_arch(%*)}} "
+#else
+# define MARCH_NATIVE_SPEC_FUNCTIONS
+# define EXPAND_MARCH_SPECS \
+  "%{march=*:%:riscv_expand_arch(%*)} "
+#endif /* __riscv */
+
 extern const char *riscv_expand_arch (int argc, const char **argv);
 extern const char *riscv_expand_arch_from_cpu (int argc, const char **argv);
 extern const char *riscv_default_mtune (int argc, const char **argv);
@@ -57,7 +70,8 @@ extern const char *riscv_arch_help (int argc, const char **argv);
   { "riscv_expand_arch_from_cpu", riscv_expand_arch_from_cpu },		\
   { "riscv_default_mtune", riscv_default_mtune },			\
   { "riscv_multi_lib_check", riscv_multi_lib_check },			\
-  { "riscv_arch_help", riscv_arch_help },
+  { "riscv_arch_help", riscv_arch_help },				\
+  MARCH_NATIVE_SPEC_FUNCTIONS
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march or -mcpu is specified.
@@ -116,7 +130,7 @@ ASM_MISA_SPEC
 "%{march=help:%:riscv_arch_help()} "				\
 "%{print-supported-extensions:%:riscv_arch_help()} "		\
 "%{-print-supported-extensions:%:riscv_arch_help()} "		\
-"%{march=*:%:riscv_expand_arch(%*)} "				\
+EXPAND_MARCH_SPECS						\
 "%{!march=*:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} "
 
 #define TARGET_DEFAULT_CMODEL CM_MEDLOW
