@@ -7,11 +7,7 @@
 #include "tm.h"
 #include "riscv-subset.h"
 
-#define STRINGIFY__(x) #x
-#define STRINGIFY(x) STRINGIFY__(x)
-
-#if defined(__linux__)
-
+#if defined (__linux__)
 #define __NR_riscv_hwprobe 258
 #define RISCV_HWPROBE_KEY_MVENDORID 0
 #define RISCV_HWPROBE_KEY_MARCHID 1
@@ -77,12 +73,14 @@
 #define RISCV_HWPROBE_MISALIGNED_MASK (7 << 0)
 #define RISCV_HWPROBE_KEY_ZICBOZ_BLOCK_SIZE 6
 
-struct riscv_hwprobe {
+struct riscv_hwprobe
+{
   long long key;
   unsigned long long value;
 };
 
-struct riscv_hwprobe_ext_bitmask_t {
+struct riscv_hwprobe_ext_bitmask_t
+{
   const char *ext;
   int bit_pos;
 };
@@ -167,17 +165,17 @@ host_detect_local_cpu (int argc, const char **argv)
     { RISCV_HWPROBE_KEY_IMA_EXT_0, 0 },
   };
 
-  int ret = syscall_5_args (__NR_riscv_hwprobe, (long)hwprobes,
-			    ARRAY_SIZE (hwprobes), 0, 0, 0);
+  int ret = syscall_5_args (__NR_riscv_hwprobe, (long) hwprobes,
+			   ARRAY_SIZE (hwprobes), 0, 0, 0);
   bool arch_info_available = true;
 
   const char *base_isa_str;
 
   if (!ret && (hwprobes[0].value & RISCV_HWPROBE_BASE_BEHAVIOR_IMA))
-    base_isa_str = "rv" STRINGIFY (__riscv_xlen) "ima";
+    base_isa_str = "rv" STRINGIZING (__riscv_xlen) "ima";
   else
     {
-      base_isa_str = STRINGIFY (TARGET_RISCV_DEFAULT_ARCH);
+      base_isa_str = STRINGIZING (TARGET_RISCV_DEFAULT_ARCH);
       arch_info_available = false;
     }
 
@@ -187,15 +185,13 @@ host_detect_local_cpu (int argc, const char **argv)
   if (arch_info_available)
     {
       for (unsigned long i = 0;
-	   i < ARRAY_SIZE (hwprobe_ima_ext0_bitmask_table);
-	   i++)
+	  i < ARRAY_SIZE (hwprobe_ima_ext0_bitmask_table); i++)
 	{
 	  const riscv_hwprobe_ext_bitmask_t *p;
 	  p = &hwprobe_ima_ext0_bitmask_table[i];
 
-	  if (hwprobes[1].value & (1ULL << (p->bit_pos))) {
+	  if (hwprobes[1].value & (1ULL << (p->bit_pos)))
 	    ext_list->add (p->ext, true);
-	  }
 	}
     }
 
