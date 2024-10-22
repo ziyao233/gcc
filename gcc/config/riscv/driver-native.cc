@@ -84,6 +84,64 @@ struct riscv_hwprobe {
   unsigned long long value;
 };
 
+struct riscv_hwprobe_ext_bitmask_t {
+  const char *ext;
+  int bit_pos;
+};
+
+const struct riscv_hwprobe_ext_bitmask_t hwprobe_ima_ext0_bitmask_table[] = {
+  { "f",		0 },
+  { "d",		0 },
+  { "c",		1 },
+  { "v",		2 },
+  { "zba",		3 },
+  { "zbb",		4 },
+  { "zbs",		5 },
+  { "zicboz",		6 },
+  { "zbc",		7 },
+  { "zbkb",		8 },
+  { "zbkc",		9 },
+  { "zbkx",		10 },
+  { "zknd",		11 },
+  { "zkne",		12 },
+  { "zknh",		13 },
+  { "zksed",		14 },
+  { "zksh",		15 },
+  { "zkt",		16 },
+  { "zvbb",		17 },
+  { "zvbc",		18 },
+  { "zvkb",		19 },
+  { "zvkg",		20 },
+  { "zvkned",		21 },
+  { "zvknha",		22 },
+  { "zvknhb",		23 },
+  { "zvksed",		24 },
+  { "zvksh",		25 },
+  { "zvkt",		26 },
+  { "zfh",		27 },
+  { "zfhmin",		28 },
+  { "zihintntl",	29 },
+  { "zvfh",		30 },
+  { "zvfhmin",		31 },
+  { "zfa",		32 },
+  { "ztso",		33 },
+  { "zacas",		34 },
+  { "zicond",		35 },
+  { "zihintpause",	36 },
+  { "zve32x",		37 },
+  { "zve32f",		38 },
+  { "zve64x",		39 },
+  { "zve64f",		40 },
+  { "zve64d",		41 },
+  { "zimop",		42 },
+  { "zca",		43 },
+  { "zcb",		44 },
+  { "zcd",		45 },
+  { "zcf",		46 },
+  { "zcmop",		47 },
+  { "zawrs",		48 },
+};
+
 static long
 syscall_5_args (long nr, long arg1, long arg2, long arg3, long arg4, long arg5)
 {
@@ -112,8 +170,7 @@ host_detect_local_cpu (int argc, const char **argv)
   };
 
   int ret = syscall_5_args (__NR_riscv_hwprobe, (long)hwprobes,
-			    sizeof (hwprobes) / sizeof (hwprobes[0]),
-			    0, 0, 0);
+			    ARRAY_SIZE (hwprobes), 0, 0, 0);
   bool arch_info_available = true;
 
   const char *base_isa_str;
@@ -131,12 +188,17 @@ host_detect_local_cpu (int argc, const char **argv)
 
   if (arch_info_available)
     {
-      ext_list->add ("f", true);
-      ext_list->add ("d", true);
-      ext_list->add ("zifencei", true);
-      ext_list->add ("zicsr", true);
-      ext_list->add ("c", true);
-      ext_list->add ("zba", true);
+      for (unsigned long i = 0;
+	   i < ARRAY_SIZE (hwprobe_ima_ext0_bitmask_table);
+	   i++)
+	{
+	  const riscv_hwprobe_ext_bitmask_t *p;
+	  p = &hwprobe_ima_ext0_bitmask_table[i];
+
+	  if (hwprobes[1].value & (1ULL << (p->bit_pos))) {
+	    ext_list->add (p->ext, true);
+	  }
+	}
     }
 
   char *arch_str = xasprintf ("-march=%s", ext_list->to_string (false).c_str());
