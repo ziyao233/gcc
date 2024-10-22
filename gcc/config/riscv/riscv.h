@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #define RISCV_TUNE_STRING_DEFAULT "rocket"
 #endif
 
-#if defined(__riscv)
+#if defined (__riscv) && defined (__linux__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
 # define MARCH_NATIVE_SPEC_FUNCTIONS				\
   { "local_cpu_detect", host_detect_local_cpu },

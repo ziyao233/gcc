@@ -142,9 +142,9 @@ case ${host} in
       ;;
     esac
     ;;
-  riscv*-*-*-*)
+  riscv*-*-linux-*)
     case ${target} in
-      riscv*-*-*)
+      riscv*-linux-*)
         host_extra_gcc_objs="driver-native.o"
         host_xmake_file="${host_xmake_file} riscv/x-native"
         ;;

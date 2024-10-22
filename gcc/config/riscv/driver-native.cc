@@ -10,8 +10,6 @@
 #define STRINGIFY__(x) #x
 #define STRINGIFY(x) STRINGIFY__(x)
 
-// todo: let's define the function on Linux only.
-
 #if defined(__linux__)
 
 #define __NR_riscv_hwprobe 258
